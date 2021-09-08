@@ -39,16 +39,13 @@ mbhdr:
 	DW	0, 0
 	DD	8
 mhdrend:
-
 _entry:
-	cli
-
-	in al, 0x70
+	cli    ;关中断
+	in al, 0x70  
 	or al, 0x80	
-	out 0x70,al
-
-	lgdt [GDT_PTR]
-	jmp dword 0x8 :_32bits_mode
+	out 0x70,al  ;关掉不可屏蔽中断
+	lgdt [GDT_PTR] ；加载GDT地址到GDTR寄存器
+	jmp dword 0x8 :_32bits_mode 跳转刷新CS影子寄存器
 
 _32bits_mode:
 	mov ax, 0x10
@@ -65,18 +62,16 @@ _32bits_mode:
 	xor esi,esi
 	xor ebp,ebp
 	xor esp,esp
-	mov esp,0x7c00
-	call inithead_entry
-	jmp 0x200000
-
-
+	mov esp,0x7c00  ;设置栈顶为0X7C00
+	call inithead_entry ;调用inithead_entry 函数在inithead.c实现
+	jmp 0x200000  ;跳转到0x200000地址
 
 GDT_START:
 knull_dsc: dq 0
 kcode_dsc: dq 0x00cf9e000000ffff
 kdata_dsc: dq 0x00cf92000000ffff
-k16cd_dsc: dq 0x00009e000000ffff
-k16da_dsc: dq 0x000092000000ffff
+k16cd_dsc: dq 0x00009e000000ffff  ;16位代码段描述符
+k16da_dsc: dq 0x000092000000ffff  ;16位数据段描述符
 GDT_END:
 GDT_PTR:
 GDTLEN	dw GDT_END-GDT_START-1	;GDT界限
